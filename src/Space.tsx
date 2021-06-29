@@ -42,6 +42,9 @@ const Swede = ({ row, col }: { row: number; col: number }) => (
 const Muscovite = ({ row, col }: { row: number; col: number }) => (
   <GenericPiece row={row} col={col} type="muscovite" depiction="M" />
 );
+const King = ({ row, col }: { row: number; col: number }) => (
+  <GenericPiece row={row} col={col} type="king" depiction="K" />
+);
 export const Space = ({
   available,
   occupant,
@@ -65,7 +68,7 @@ export const Space = ({
 }) => {
   const [{ isOver }, drop] = useDrop(
     () => ({
-      accept: currentPlayer === "attacker" ? "muscovite" : "swede",
+      accept: currentPlayer === "attacker" ? "muscovite" : ["swede", "king"],
       drop: (item, monitor) => {
         onMove(monitor.getItem(), { row, col });
       },
@@ -99,9 +102,7 @@ export const Space = ({
           () => <div className="w-8 h-8" ref={drop}></div>,
           flow(
             M.match({
-              king: () => (
-                <div className="w-8 h-8 grid display-content-center">K</div>
-              ),
+              king: () => <King row={row} col={col} />,
               swede: () => <Swede row={row} col={col} />,
               muscovite: () => <Muscovite row={row} col={col} />,
               _: () => <div />,
