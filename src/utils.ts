@@ -2,7 +2,9 @@ import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/function";
 import { Ord } from "fp-ts/lib/Ord";
 import * as O from "fp-ts/lib/Option";
-import { ordCol, ordRow, Position } from "./types";
+import * as R from "fp-ts/lib/Record";
+import { ordCol, ordRow, Piece, Position, Side } from "./types";
+import { eqPosition } from "./setupBoard";
 
 const barriers =
   <A>(ord: Ord<A>) =>
@@ -81,3 +83,100 @@ export const getAvailableSpaces = (
         )
     ),
   ]);
+
+const isOtherSide = (side: Side) => (piece: Piece) =>
+  side === "attacker" ? piece._tag !== "muscovite" : piece._tag === "muscovite";
+const isSameSide = (side: Side) => (piece: Piece) => !isOtherSide(side)(piece);
+type BoardSides = "left" | "right" | "top" | "bottom";
+type PiecesInPosition = Record<BoardSides, O.Option<Piece>>;
+
+const piecesInRelativePosition = (
+  position: Position,
+  pieces: Array<Piece>,
+  n: number
+): PiecesInPosition =>
+  pipe(pieces, (pieces) => ({
+    top: pipe(
+      pieces,
+      A.findFirst((p) =>
+        eqPosition.equals(p.position, {
+          row: position.row,
+          col: position.col - n,
+        })
+      )
+    ),
+    bottom: pipe(
+      pieces,
+      A.findFirst((p) =>
+        eqPosition.equals(p.position, {
+          row: position.row,
+          col: position.col + n,
+        })
+      )
+    ),
+    left: pipe(
+      pieces,
+      A.findFirst((p) =>
+        eqPosition.equals(p.position, {
+          row: position.row - n,
+          col: position.col,
+        })
+      )
+    ),
+    right: pipe(
+      pieces,
+      A.findFirst((p) =>
+        eqPosition.equals(p.position, {
+          row: position.row + n,
+          col: position.col,
+        })
+      )
+    ),
+  }));
+
+const alliesInPositionToCapture =
+  (position: Position) => (pieces: Array<Piece>) =>
+    piecesInRelativePosition(position, pieces, 2);
+const adjacentEnemies = (position: Position) => (pieces: Array<Piece>) =>
+  piecesInRelativePosition(position, pieces, 1);
+
+const capturableEnemies =
+  (allies: PiecesInPosition) => (enemies: PiecesInPosition) => ({
+    top: pipe(
+      allies.top,
+      O.chain((a) => enemies.top)
+    ),
+    bottom: pipe(
+      allies.bottom,
+      O.chain((a) => enemies.bottom)
+    ),
+    left: pipe(
+      allies.left,
+      O.chain((a) => enemies.left)
+    ),
+    right: pipe(
+      allies.right,
+      O.chain((a) => enemies.right)
+    ),
+  });
+// normal capture is when you move a piece on your Side to a new Position and
+// it is adjacent to a piece on the other Side, and beyond that is another piece on your Side
+export const capturedPieces = (
+  position: Position,
+  pieces: Array<Piece>,
+  side: Side
+): Array<Piece> =>
+  pipe(
+    pieces,
+    A.filter(isOtherSide(side)),
+    adjacentEnemies(position),
+    capturableEnemies(
+      pipe(
+        pieces,
+        A.filter(isSameSide(side)),
+        alliesInPositionToCapture(position)
+      )
+    ),
+    R.compact,
+    R.collect((k, v) => v)
+  );

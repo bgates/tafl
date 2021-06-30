@@ -55,3 +55,4 @@ export const eqPosition: Eq<T.Position> = struct({
   row: eqNumber,
   col: eqNumber,
 });
+export const eqPiece: Eq<T.Piece> = struct({ position: eqPosition });

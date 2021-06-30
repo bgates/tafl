@@ -4,11 +4,11 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 
 import "./App.css";
 import * as A from "fp-ts/lib/Array";
-import { castle, eqPosition, setupPieces } from "./setupBoard";
+import { castle, eqPiece, eqPosition, setupPieces } from "./setupBoard";
 import { pipe } from "fp-ts/lib/function";
 import { Space } from "./Space";
 import { Piece, Position, Side } from "./types";
-import { getAvailableSpaces } from "./utils";
+import { capturedPieces, getAvailableSpaces } from "./utils";
 
 const App = () => {
   const [currentPlayer, setCurrentPlayer] = useState<Side>("attacker");
@@ -19,6 +19,10 @@ const App = () => {
     setPieces(
       pipe(
         pieces,
+        A.filter(
+          (p) =>
+            !pipe(capturedPieces(to, pieces, currentPlayer), A.elem(eqPiece)(p))
+        ),
         A.map((p) =>
           eqPosition.equals(p.position, from) ? { ...p, position: to } : p
         )
