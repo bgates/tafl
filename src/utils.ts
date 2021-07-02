@@ -114,8 +114,8 @@ const piecesInRelativePosition = (
       pieces,
       A.findFirst((p) =>
         eqPosition.equals(p.position, {
-          row: position.row,
-          col: position.col - n,
+          row: position.row - n,
+          col: position.col,
         })
       )
     ),
@@ -123,8 +123,8 @@ const piecesInRelativePosition = (
       pieces,
       A.findFirst((p) =>
         eqPosition.equals(p.position, {
-          row: position.row,
-          col: position.col + n,
+          row: position.row + n,
+          col: position.col,
         })
       )
     ),
@@ -132,8 +132,8 @@ const piecesInRelativePosition = (
       pieces,
       A.findFirst((p) =>
         eqPosition.equals(p.position, {
-          row: position.row - n,
-          col: position.col,
+          row: position.row,
+          col: position.col - n,
         })
       )
     ),
@@ -141,8 +141,8 @@ const piecesInRelativePosition = (
       pieces,
       A.findFirst((p) =>
         eqPosition.equals(p.position, {
-          row: position.row + n,
-          col: position.col,
+          row: position.row,
+          col: position.col + n,
         })
       )
     ),
@@ -207,7 +207,7 @@ const adjacentToThisManyAttackers = (
 const kingAdjacentToCastle =
   (pieces: Array<Piece>) => (capturablePieces: Array<Piece>) =>
     pipe(
-      capturablePieces,
+      pieces,
       A.findFirst(isKing),
       O.chain(
         O.fromPredicate((king) =>
@@ -235,7 +235,7 @@ const kingAdjacentToCastle =
 const kingInsideCastle =
   (pieces: Array<Piece>) => (capturablePieces: Array<Piece>) =>
     pipe(
-      capturablePieces,
+      pieces,
       A.findFirst(isKing),
       O.chain(
         O.fromPredicate((king) => eqPosition.equals(king.position, castle))
@@ -260,26 +260,24 @@ const kingInsideCastle =
 
 // normal capture is when you move a piece on your Side to a new Position and
 // it is adjacent to a piece on the other Side, and beyond that is another piece on your Side
-export const capturedPieces = (
-  position: Position,
-  pieces: Array<Piece>,
-  side: Side
-): Array<Piece> =>
-  pipe(
-    pieces,
-    A.filter(isOtherSide(side)),
-    adjacentEnemies(position),
-    capturableEnemies(
-      pipe(
-        pieces,
-        A.filter(isSameSide(side)),
-        alliesAndEmptyCastle(pieces),
-        alliesInPositionToCapture(position)
-      )
-    ),
-    R.compact,
-    R.collect((k, v) => v),
-    A.filter(isPiece),
-    kingAdjacentToCastle(pieces),
-    kingInsideCastle(pieces)
-  );
+export const capturedPieces =
+  (position: Position, side: Side) =>
+  (pieces: Array<Piece>): Array<Piece> =>
+    pipe(
+      pieces,
+      A.filter(isOtherSide(side)),
+      adjacentEnemies(position),
+      capturableEnemies(
+        pipe(
+          pieces,
+          A.filter(isSameSide(side)),
+          alliesAndEmptyCastle(pieces),
+          alliesInPositionToCapture(position)
+        )
+      ),
+      R.compact,
+      R.collect((k, v) => v),
+      A.filter(isPiece),
+      kingAdjacentToCastle(pieces),
+      kingInsideCastle(pieces)
+    );

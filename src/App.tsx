@@ -19,15 +19,17 @@ const App = () => {
   const movePiece = (from: Position, to: Position) => {
     setPieces(
       pipe(
-        capturedPieces(to, pieces, currentPlayer),
-        (captured) =>
-          pipe(
-            pieces,
-            A.filter((p) => !pipe(captured, A.elem(eqPiece)(p)))
-          ),
+        pieces,
         A.map((p) =>
           eqPosition.equals(p.position, from) ? { ...p, position: to } : p
-        )
+        ),
+        (movedPieces) =>
+          pipe(movedPieces, capturedPieces(to, currentPlayer), (captured) =>
+            pipe(
+              movedPieces,
+              A.filter((p) => !pipe(captured, A.elem(eqPiece)(p)))
+            )
+          )
       )
     );
     setCurrentPlayer(currentPlayer === "attacker" ? "defender" : "attacker");
@@ -62,11 +64,11 @@ const App = () => {
       <div className="grid place-content-center">
         <div>{currentPlayer}'s Turn</div>
         <DndProvider backend={HTML5Backend}>
-          <div className="flex">
+          <div>
             {pipe(
               A.range(0, 8),
               A.map((row) => (
-                <div className="flex-col" key={row}>
+                <div className="flex flex-row" key={row}>
                   {pipe(
                     A.range(0, 8),
                     A.map((col) => (
