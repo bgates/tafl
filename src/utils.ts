@@ -31,68 +31,73 @@ export const getAvailableSpaces = (
   p: Position,
   ps: Array<Position>
 ): Array<Position> =>
-  pipe(ps, (positions) => [
-    ...pipe(
-      positions,
-      A.filter((pp) => pp.row === p.row && pp.col !== p.col),
-      A.partition((p0) => p0.col > p.col),
-      barriers(ordCol),
-      ({ leftBlock, rightBlock }) =>
-        pipe(
-          A.range(0, 8),
-          A.filter(
-            (col) =>
-              pipe(
-                leftBlock,
-                O.fold(
-                  () => true,
-                  (left) => left.col < col
+  pipe(
+    ps,
+    (positions) => [
+      ...pipe(
+        positions,
+        A.filter((pp) => pp.row === p.row && pp.col !== p.col),
+        A.partition((p0) => p0.col > p.col),
+        barriers(ordCol),
+        ({ leftBlock, rightBlock }) =>
+          pipe(
+            A.range(0, 8),
+            A.filter(
+              (col) =>
+                pipe(
+                  leftBlock,
+                  O.fold(
+                    () => true,
+                    (left) => left.col < col
+                  )
+                ) &&
+                pipe(
+                  rightBlock,
+                  O.fold(
+                    () => true,
+                    (right) => right.col > col
+                  )
                 )
-              ) &&
-              pipe(
-                rightBlock,
-                O.fold(
-                  () => true,
-                  (right) => right.col > col
+            ),
+            A.map((col) => ({ row: p.row, col }))
+          )
+      ),
+      ...pipe(
+        positions,
+        A.filter((pp) => pp.col === p.col && pp.row !== p.row),
+        A.partition((p0) => p0.row > p.row),
+        barriers(ordRow),
+        ({ leftBlock, rightBlock }) =>
+          pipe(
+            A.range(0, 8),
+            A.filter(
+              (row) =>
+                pipe(
+                  leftBlock,
+                  O.fold(
+                    () => true,
+                    (left) => left.row < row
+                  )
+                ) &&
+                pipe(
+                  rightBlock,
+                  O.fold(
+                    () => true,
+                    (right) => right.row > row
+                  )
                 )
-              )
-          ),
-          A.map((col) => ({ row: p.row, col }))
-        )
-    ),
-    ...pipe(
-      positions,
-      A.filter((pp) => pp.col === p.col && pp.row !== p.row),
-      A.partition((p0) => p0.row > p.row),
-      barriers(ordRow),
-      ({ leftBlock, rightBlock }) =>
-        pipe(
-          A.range(0, 8),
-          A.filter(
-            (row) =>
-              pipe(
-                leftBlock,
-                O.fold(
-                  () => true,
-                  (left) => left.row < row
-                )
-              ) &&
-              pipe(
-                rightBlock,
-                O.fold(
-                  () => true,
-                  (right) => right.row > row
-                )
-              )
-          ),
-          A.map((row) => ({ row, col: p.col }))
-        )
-    ),
-  ]);
+            ),
+            A.map((row) => ({ row, col: p.col }))
+          )
+      ),
+    ],
+    A.filter((p0) => !eqPosition.equals(p0, p))
+  );
 
 const isOtherSide = (side: Side) => (piece: Piece) =>
   side === "attacker" ? piece._tag !== "muscovite" : piece._tag === "muscovite";
-const isSameSide = (side: Side) => (piece: Piece) => !isOtherSide(side)(piece);
+export const isSameSide = (side: Side) => (piece: Piece) =>
+  !isOtherSide(side)(piece);
 type BoardSides = "left" | "right" | "top" | "bottom";
 type PiecesInPosition = Record<BoardSides, O.Option<PieceOrCastle>>;
 type PieceOrCastle = {

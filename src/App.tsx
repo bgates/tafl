@@ -4,11 +4,12 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 
 import "./App.css";
 import * as A from "fp-ts/lib/Array";
+import * as O from "fp-ts/lib/Option";
 import { castle, eqPiece, eqPosition, setupPieces } from "./setupBoard";
 import { pipe } from "fp-ts/lib/function";
 import { Space } from "./Space";
 import { Piece, Position, Side } from "./types";
-import { capturedPieces, getAvailableSpaces } from "./utils";
+import { capturedPieces, getAvailableSpaces, isSameSide } from "./utils";
 
 const App = () => {
   const [currentPlayer, setCurrentPlayer] = useState<Side>("attacker");
@@ -18,11 +19,12 @@ const App = () => {
   const movePiece = (from: Position, to: Position) => {
     setPieces(
       pipe(
-        pieces,
-        A.filter(
-          (p) =>
-            !pipe(capturedPieces(to, pieces, currentPlayer), A.elem(eqPiece)(p))
-        ),
+        capturedPieces(to, pieces, currentPlayer),
+        (captured) =>
+          pipe(
+            pieces,
+            A.filter((p) => !pipe(captured, A.elem(eqPiece)(p)))
+          ),
         A.map((p) =>
           eqPosition.equals(p.position, from) ? { ...p, position: to } : p
         )
@@ -30,16 +32,25 @@ const App = () => {
     );
     setCurrentPlayer(currentPlayer === "attacker" ? "defender" : "attacker");
   };
-  const setAvailableSpacesFor = (p: Position) => () =>
+  const setAvailableSpacesFor = (p: Position, side: Side) => () =>
     pipe(
-      getAvailableSpaces(
-        p,
-        pipe(
-          pieces,
-          A.map((p0) => p0.position)
-        )
+      pieces,
+      A.findFirst((p0) => eqPosition.equals(p, p0.position)),
+      O.chain(O.fromPredicate(isSameSide(side))),
+      O.fold(
+        () => [],
+        () =>
+          pipe(
+            getAvailableSpaces(
+              p,
+              pipe(
+                pieces,
+                A.map((p0) => p0.position),
+                A.filter((p0) => !eqPosition.equals(p, p0))
+              )
+            )
+          )
       ),
-      A.filter((p0) => !eqPosition.equals(p, p0)),
       setAvailableSpaces
     );
   const resetAvailableSpaces = () => setAvailableSpaces([]);
@@ -72,7 +83,10 @@ const App = () => {
                           )
                         )}
                         isCastle={eqPosition.equals(castle, { row, col })}
-                        onHover={setAvailableSpacesFor({ row, col })}
+                        onHover={setAvailableSpacesFor(
+                          { row, col },
+                          currentPlayer
+                        )}
                         onLeave={resetAvailableSpaces}
                         onMove={movePiece}
                         currentPlayer={currentPlayer}
