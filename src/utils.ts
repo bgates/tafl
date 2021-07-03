@@ -151,9 +151,8 @@ const piecesInRelativePosition = (
 const alliesInPositionToCapture =
   (position: Position) => (pieces: Array<PieceOrCastle>) =>
     piecesInRelativePosition(position, pieces, 2);
-const adjacentEnemies =
-  (position: Position) => (pieces: Array<PieceOrCastle>) =>
-    piecesInRelativePosition(position, pieces, 1);
+const adjacentPieces = (position: Position) => (pieces: Array<PieceOrCastle>) =>
+  piecesInRelativePosition(position, pieces, 1);
 
 const capturableEnemies =
   (allies: PiecesInPosition) => (enemies: PiecesInPosition) => ({
@@ -190,16 +189,23 @@ const alliesAndEmptyCastle = (pieces: Array<Piece>) => (allies: Array<Piece>) =>
       () => allies
     )
   );
+
+const extractAdjacentPieces = (pp: PiecesInPosition) =>
+  pipe(
+    pp,
+    R.compact,
+    R.collect((k, v) => v),
+    A.filter(isPiece)
+  );
 const adjacentToThisManyAttackers = (
   piece: Piece,
   pieces: Array<Piece>,
   n: number
 ) =>
   pipe(
-    piecesInRelativePosition(piece.position, pieces, 1),
-    R.compact,
-    R.collect((k, v) => v),
-    A.filter(isPiece),
+    pieces,
+    adjacentPieces(piece.position),
+    extractAdjacentPieces,
     A.filter(isSameSide("attacker")),
     (arr) => arr.length >= n
   );
@@ -257,6 +263,38 @@ const kingInsideCastle =
           )
       )
     );
+// If the king is in the castle and surrounded on three sides by attackers, but protected by a defender on the last side,
+// it is possible to capture the last defender by pinning it between an attacker piece and the occupied castle
+const capturePinnedDefender =
+  (movedTo: Position) =>
+  (pieces: Array<Piece>) =>
+  (capturablePieces: Array<Piece>) =>
+    pipe(
+      pieces,
+      A.findFirst(isKing),
+      O.chain(
+        O.fromPredicate(
+          (king) =>
+            eqPosition.equals(king.position, castle) &&
+            adjacentToThisManyAttackers(king, pieces, 3)
+        )
+      ),
+      O.chain((king) =>
+        pipe(
+          pieces,
+          A.filter(isSameSide("defender")),
+          adjacentPieces(king.position),
+          extractAdjacentPieces,
+          adjacentPieces(movedTo),
+          extractAdjacentPieces,
+          A.head
+        )
+      ),
+      O.fold(
+        () => capturablePieces,
+        (pinnedDefender) => A.append(pinnedDefender)(capturablePieces)
+      )
+    );
 
 // normal capture is when you move a piece on your Side to a new Position and
 // it is adjacent to a piece on the other Side, and beyond that is another piece on your Side
@@ -266,7 +304,7 @@ export const capturedPieces =
     pipe(
       pieces,
       A.filter(isOtherSide(side)),
-      adjacentEnemies(position),
+      adjacentPieces(position),
       capturableEnemies(
         pipe(
           pieces,
@@ -279,5 +317,6 @@ export const capturedPieces =
       R.collect((k, v) => v),
       A.filter(isPiece),
       kingAdjacentToCastle(pieces),
-      kingInsideCastle(pieces)
+      kingInsideCastle(pieces),
+      capturePinnedDefender(position)(pieces)
     );
