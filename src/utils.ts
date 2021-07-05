@@ -104,49 +104,32 @@ type PieceOrCastle = {
   position: Position;
 };
 
+const findPieceWithPosition =
+  (pieces: Array<PieceOrCastle>) => (position: Position) =>
+    pipe(
+      pieces,
+      A.findFirst((p) => eqPosition.equals(p.position, position))
+    );
 const piecesInRelativePosition = (
   position: Position,
   pieces: Array<PieceOrCastle>,
   n: number
 ): PiecesInPosition =>
-  pipe(pieces, (pieces) => ({
-    top: pipe(
-      pieces,
-      A.findFirst((p) =>
-        eqPosition.equals(p.position, {
-          row: position.row - n,
-          col: position.col,
-        })
-      )
-    ),
-    bottom: pipe(
-      pieces,
-      A.findFirst((p) =>
-        eqPosition.equals(p.position, {
-          row: position.row + n,
-          col: position.col,
-        })
-      )
-    ),
-    left: pipe(
-      pieces,
-      A.findFirst((p) =>
-        eqPosition.equals(p.position, {
-          row: position.row,
-          col: position.col - n,
-        })
-      )
-    ),
-    right: pipe(
-      pieces,
-      A.findFirst((p) =>
-        eqPosition.equals(p.position, {
-          row: position.row,
-          col: position.col + n,
-        })
-      )
-    ),
-  }));
+  pipe(
+    {
+      top: { ...position, row: position.row - n },
+      bottom: {
+        ...position,
+        row: position.row + n,
+      },
+      left: { ...position, col: position.col - n },
+      right: {
+        ...position,
+        col: position.col + n,
+      },
+    },
+    R.map(findPieceWithPosition(pieces))
+  );
 
 const alliesInPositionToCapture =
   (position: Position) => (pieces: Array<PieceOrCastle>) =>

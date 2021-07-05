@@ -1,4 +1,3 @@
-import React from "react";
 import { constVoid, flow, pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import * as M from "pattern-matching-ts/lib/match";

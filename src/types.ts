@@ -10,17 +10,14 @@ export type Position = {
 export type King = {
   readonly _tag: "king";
   position: Position;
-  uuid: string;
 };
 export type Swede = {
   readonly _tag: "swede";
   position: Position;
-  uuid: string;
 };
 export type Muscovite = {
   readonly _tag: "muscovite";
   position: Position;
-  uuid: string;
 };
 export type Piece = King | Swede | Muscovite;
 export type Space = {
