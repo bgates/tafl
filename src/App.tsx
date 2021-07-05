@@ -1,6 +1,7 @@
-import {BrowserRouter as Router, Route} from 'react-router-dom'
-import "./App.css";
-import { Game } from "./Game";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import "App.css";
+import { Game } from "pages/Game/Game";
+import { Start } from "pages/Start/Start";
 
 const App = () => {
   return (
@@ -9,8 +10,8 @@ const App = () => {
         <h1>Hnefatafl</h1>
       </header>
       <Router>
-      <Route path='/game' component={Game} />
-
+        <Route path="/" component={Start} />
+        <Route path="/game" component={Game} />
       </Router>
     </div>
   );

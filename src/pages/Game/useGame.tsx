@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState } from "react";
 import * as A from "fp-ts/lib/Array";
-import * as O from "fp-ts/lib/Option";
-import { eqPiece, eqPosition, setupPieces } from "./setupBoard";
 import { pipe } from "fp-ts/lib/function";
-import { Piece, Position, Side } from "./types";
-import { capturedPieces, getAvailableSpaces, isSameSide } from "./utils";
+import * as O from "fp-ts/lib/Option";
+import { eqPiece, eqPosition, setupPieces } from "setupBoard";
+import { Piece, Position, Side } from "types";
+import { capturedPieces, getAvailableSpaces, isSameSide } from "utils";
 
 export const useGame = () => {
   const [currentPlayer, setCurrentPlayer] = useState<Side>("attacker");
@@ -58,6 +58,6 @@ export const useGame = () => {
     setAvailableSpacesFor,
     movePiece,
     resetAvailableSpaces,
-    pieces
-  }
-}
+    pieces,
+  };
+};

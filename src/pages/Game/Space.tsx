@@ -1,8 +1,8 @@
 import { constVoid, flow, pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import * as M from "pattern-matching-ts/lib/match";
-import { Piece, Position, Side } from "./types";
 import { useDrag, useDrop } from "react-dnd";
+import { Piece, Position, Side } from "types";
 
 const GenericPiece = ({
   row,
