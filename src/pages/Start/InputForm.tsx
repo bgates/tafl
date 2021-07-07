@@ -27,44 +27,27 @@ export const InputForm = ({
       onChange={onChangeName}
       value={name}
     />
-    {newGame ? (
-      <div className="nav-container">
-        <ChoiceButton
-          type="nav-back"
-          choice="back"
-          onChoice={stepBack}
-          label="Back"
-        />
-        <ChoiceButton
-          type="nav-forward"
-          choice="submit"
-          onChoice={onSubmit}
-          label="Let's Go"
-        />
-      </div>
-    ) : (
-      <>
-        <Input
-          name="room"
-          placeholder="Room ID..."
-          onChange={onChangeRoom}
-          value={room}
-        />
-        <div className="nav-container">
-          <ChoiceButton
-            type="nav-back"
-            choice="back"
-            onChoice={stepBack}
-            label="Back"
-          />
-          <ChoiceButton
-            type="nav-forward"
-            choice="submit"
-            onChoice={onSubmit}
-            label="Let's Go"
-          />
-        </div>
-      </>
+    {newGame ? null : (
+      <Input
+        name="room"
+        placeholder="Room ID..."
+        onChange={onChangeRoom}
+        value={room}
+      />
     )}
+    <div className="nav-container">
+      <ChoiceButton
+        type="nav-back"
+        choice="back"
+        onChoice={stepBack}
+        label="Back"
+      />
+      <ChoiceButton
+        type="nav-forward"
+        choice="submit"
+        onChoice={onSubmit}
+        label="Let's Go"
+      />
+    </div>
   </div>
 );
