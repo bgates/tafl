@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import "App.css";
-import { Game } from "pages/Game/Game";
+import { ActiveGame } from "pages/ActiveGame/ActiveGame";
 import { Start } from "pages/Start/Start";
 
 const App = () => {
@@ -11,7 +11,7 @@ const App = () => {
       </header>
       <Router>
         <Route path="/" component={Start} />
-        <Route path="/game" component={Game} />
+        <Route path="/game" component={ActiveGame} />
       </Router>
     </div>
   );

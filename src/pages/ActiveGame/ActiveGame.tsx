@@ -4,10 +4,10 @@ import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/function";
 import { castle, eqPosition } from "setupBoard";
 
-import { Space } from "pages/Game/Space";
-import { useGame } from "pages/Game/useGame";
+import { Space } from "pages/ActiveGame/Space";
+import { useGame } from "pages/ActiveGame/useActiveGame";
 
-export const Game = () => {
+export const ActiveGame = () => {
   const {
     currentPlayer,
     availableSpaces,
