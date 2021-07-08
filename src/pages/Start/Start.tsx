@@ -9,8 +9,9 @@ import { Redirect } from "react-router-dom";
 
 import { pipe } from "fp-ts/lib/function";
 import { useStart } from "./useStart";
+import { Socket } from "socket.io-client";
 
-export const Start = () => {
+export const Start = ({ socket }: { socket: Socket }) => {
   const {
     error,
     errorMsg,
@@ -25,7 +26,7 @@ export const Start = () => {
     onChoice,
     onSubmit,
     stepBack,
-  } = useStart();
+  } = useStart(socket);
   return serverConfirmed ? (
     <Redirect to={`/game?room=${room}&name=${name}`} />
   ) : (

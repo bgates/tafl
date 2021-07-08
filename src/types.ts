@@ -33,3 +33,8 @@ export const ordRow: Ord.Ord<Position> = Ord.contramap((p: Position) => p.row)(
 export const ordCol: Ord.Ord<Position> = Ord.contramap((p: Position) => p.col)(
   Ord.ordNumber
 );
+export type Game = {
+  end: boolean;
+  turn: Side;
+  pieces: Array<Piece>;
+};

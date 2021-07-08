@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 
-const ENDPOINT = "http://localhost:4000/";
-
-export const useStart = () => {
+export const useStart = (socket: Socket) => {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [game, setGame] = useState<boolean | null>(null);
@@ -13,11 +11,7 @@ export const useStart = () => {
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const socketRef = useRef<Socket>();
   useEffect(() => {
-    socketRef.current = io(ENDPOINT);
-    const socket = socketRef.current;
-
     socket.on("newGameCreated", (room) => {
       setServerConfirmed(true);
       setRoom(room);
@@ -26,11 +20,7 @@ export const useStart = () => {
       setServerConfirmed(true);
     });
     socket.on("errorMessage", (message) => displayError(message));
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  }, [socket]);
   const onChoice = (choice: string) => {
     const gameChoice = choice === "new";
     setGame(gameChoice);
@@ -47,11 +37,11 @@ export const useStart = () => {
 
   const onSubmit = () => {
     setLoading(true);
-    if (validate() && socketRef.current) {
+    if (validate()) {
       if (game) {
-        socketRef.current.emit("newGame");
+        socket.emit("newGame");
       } else {
-        socketRef.current.emit("joining", { room });
+        socket.emit("joining", { room });
       }
     } else {
       setTimeout(() => setLoading(false), 500);
