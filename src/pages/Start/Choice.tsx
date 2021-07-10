@@ -7,7 +7,7 @@ type ChoiceProps = {
 export const Choice = ({ logo, onChoice }: ChoiceProps) => (
   <div className="choice-container">
     <a href="/">
-      <img src={logo} alt="Viking Chess!" />
+      <img src={logo} alt="Viking Chess!" height={200} />
     </a>
     <ChoiceButton
       onChoice={onChoice}

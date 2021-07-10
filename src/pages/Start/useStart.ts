@@ -5,16 +5,16 @@ export const useStart = (socket: Socket) => {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [game, setGame] = useState<boolean | null>(null);
-  const [room, setRoom] = useState("");
+  const [roomId, setRoomId] = useState("");
   const [loading, setLoading] = useState(false);
   const [serverConfirmed, setServerConfirmed] = useState(false);
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    socket.on("newGameCreated", (room) => {
+    socket.on("newGameCreated", (newRoomId) => {
       setServerConfirmed(true);
-      setRoom(room);
+      setRoomId(newRoomId);
     });
     socket.on("joinConfirmed", () => {
       setServerConfirmed(true);
@@ -31,7 +31,7 @@ export const useStart = (socket: Socket) => {
     if (game) {
       return !(name === "");
     } else {
-      return !(name === "") && !(room === "");
+      return !(name === "") && !(roomId === "");
     }
   };
 
@@ -41,7 +41,7 @@ export const useStart = (socket: Socket) => {
       if (game) {
         socket.emit("newGame");
       } else {
-        socket.emit("joining", { room });
+        socket.emit("joining", { roomId });
       }
     } else {
       setTimeout(() => setLoading(false), 500);
@@ -64,7 +64,7 @@ export const useStart = (socket: Socket) => {
   const onChangeName = (e: React.ChangeEvent<HTMLInputElement>) =>
     setName(e.target.value);
   const onChangeRoom = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setRoom(e.target.value);
+    setRoomId(e.target.value);
 
   const displayError = (message: string) => {
     setError(true);
@@ -82,7 +82,7 @@ export const useStart = (socket: Socket) => {
     game,
     loading,
     name,
-    room,
+    roomId,
     step,
     serverConfirmed,
     onChangeName,

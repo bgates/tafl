@@ -18,7 +18,7 @@ export const Start = ({ socket }: { socket: Socket }) => {
     game,
     loading,
     name,
-    room,
+    roomId,
     serverConfirmed,
     step,
     onChangeName,
@@ -28,7 +28,7 @@ export const Start = ({ socket }: { socket: Socket }) => {
     stepBack,
   } = useStart(socket);
   return serverConfirmed ? (
-    <Redirect to={`/game?room=${room}&name=${name}`} />
+    <Redirect to={`/game?room=${roomId}&name=${name}`} />
   ) : (
     pipe(
       step,
@@ -46,7 +46,7 @@ export const Start = ({ socket }: { socket: Socket }) => {
               onChangeRoom={onChangeRoom}
               newGame={game}
               name={name}
-              room={room}
+              room={roomId}
             />
           </>
         ),

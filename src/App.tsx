@@ -7,8 +7,8 @@ import * as O from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/lib/function";
 
 const App = () => {
-  const { socketRef } = useSocket();
-  const socket = pipe(socketRef.current, O.fromNullable);
+  const { socket } = useSocket();
+
   return (
     <div className="App">
       <header className="App-header">
@@ -17,7 +17,7 @@ const App = () => {
       {pipe(
         socket,
         O.fold(
-          () => null,
+          () => <div>NO SOCKET</div>,
           (s) => (
             <Router>
               <Route path="/">
