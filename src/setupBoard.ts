@@ -1,5 +1,5 @@
 import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
-import { Eq, struct } from "fp-ts/lib/Eq";
+import * as Eq from "fp-ts/lib/Eq";
 import { pipe } from "fp-ts/lib/function";
 import { Eq as eqNumber } from "fp-ts/lib/number";
 import * as T from "./types";
@@ -48,11 +48,11 @@ export const setupPieces = () => [
   ...pipe(swedeStartPositions, RNEA.map(createSwede)),
   king,
 ];
-export const eqPosition: Eq<T.Position> = struct({
+export const eqPosition: Eq.Eq<T.Position> = Eq.struct({
   row: eqNumber,
   col: eqNumber,
 });
-export const eqPiece: Eq<T.Piece> = struct({ position: eqPosition });
+export const eqPiece: Eq.Eq<T.Piece> = Eq.struct({ position: eqPosition });
 
-export const eqBoard: Eq<RNEA.ReadonlyNonEmptyArray<T.Piece>> =
+export const eqBoard: Eq.Eq<RNEA.ReadonlyNonEmptyArray<T.Piece>> =
   RNEA.getEq(eqPiece);

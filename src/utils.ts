@@ -1,7 +1,9 @@
 import * as A from "fp-ts/lib/Array";
-import { pipe } from "fp-ts/lib/function";
+import { identity, pipe } from "fp-ts/lib/function";
 import { Ord } from "fp-ts/lib/Ord";
 import * as O from "fp-ts/lib/Option";
+import * as RA from "fp-ts/lib/ReadonlyArray";
+import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
 import * as R from "fp-ts/lib/Record";
 import { ordCol, ordRow, Piece, Position, Side } from "./types";
 import { castle, eqPosition } from "./setupBoard";
@@ -105,14 +107,14 @@ type PieceOrCastle = {
 };
 
 const findPieceWithPosition =
-  (pieces: Array<PieceOrCastle>) => (position: Position) =>
+  (pieces: readonly PieceOrCastle[]) => (position: Position) =>
     pipe(
       pieces,
-      A.findFirst((p) => eqPosition.equals(p.position, position))
+      RA.findFirst((p) => eqPosition.equals(p.position, position))
     );
 const piecesInRelativePosition = (
   position: Position,
-  pieces: Array<PieceOrCastle>,
+  pieces: readonly PieceOrCastle[],
   n: number
 ): PiecesInPosition =>
   pipe(
@@ -132,10 +134,11 @@ const piecesInRelativePosition = (
   );
 
 const alliesInPositionToCapture =
-  (position: Position) => (pieces: Array<PieceOrCastle>) =>
+  (position: Position) => (pieces: readonly PieceOrCastle[]) =>
     piecesInRelativePosition(position, pieces, 2);
-const adjacentPieces = (position: Position) => (pieces: Array<PieceOrCastle>) =>
-  piecesInRelativePosition(position, pieces, 1);
+const adjacentPieces =
+  (position: Position) => (pieces: readonly PieceOrCastle[]) =>
+    piecesInRelativePosition(position, pieces, 1);
 
 const capturableEnemies =
   (allies: PiecesInPosition) => (enemies: PiecesInPosition) => ({
@@ -160,18 +163,19 @@ const capturableEnemies =
 const isKing = (piece: Piece) => piece._tag === "king";
 const isPiece = (p: Piece | { position: Position }): p is Piece => "_tag" in p;
 
-const alliesAndEmptyCastle = (pieces: Array<Piece>) => (allies: Array<Piece>) =>
-  pipe(
-    pieces,
-    A.findFirst(isKing),
-    O.chain(
-      O.fromPredicate((king) => eqPosition.equals(king.position, castle))
-    ),
-    O.fold(
-      () => [{ position: castle }, ...allies],
-      () => allies
-    )
-  );
+const alliesAndEmptyCastle =
+  (pieces: readonly Piece[]) => (allies: readonly Piece[]) =>
+    pipe(
+      pieces,
+      RA.findFirst(isKing),
+      O.chain(
+        O.fromPredicate((king) => eqPosition.equals(king.position, castle))
+      ),
+      O.fold(
+        (): readonly PieceOrCastle[] => [{ position: castle }, ...allies],
+        () => allies
+      )
+    );
 
 const extractAdjacentPieces = (pp: PiecesInPosition) =>
   pipe(
@@ -182,7 +186,7 @@ const extractAdjacentPieces = (pp: PiecesInPosition) =>
   );
 const adjacentToThisManyAttackers = (
   piece: Piece,
-  pieces: Array<Piece>,
+  pieces: readonly Piece[],
   n: number
 ) =>
   pipe(
@@ -194,10 +198,10 @@ const adjacentToThisManyAttackers = (
   );
 // If the king is on a square adjoining the castle (horizontally or vertically) he must be surrounded on the three remaining sides by his enemies.
 const kingAdjacentToCastle =
-  (pieces: Array<Piece>) => (capturablePieces: Array<Piece>) =>
+  (pieces: readonly Piece[]) => (capturablePieces: readonly Piece[]) =>
     pipe(
       pieces,
-      A.findFirst(isKing),
+      RA.findFirst(isKing),
       O.chain(
         O.fromPredicate((king) =>
           pipe(positionsAdjacentToCastle, A.elem(eqPosition)(king.position))
@@ -211,7 +215,7 @@ const kingAdjacentToCastle =
             (trueIfKingCapturable) =>
               pipe(
                 capturablePieces,
-                A.filter(
+                RA.filter(
                   (piece) =>
                     trueIfKingCapturable ||
                     !eqPosition.equals(king.position, piece.position)
@@ -222,10 +226,10 @@ const kingAdjacentToCastle =
     );
 // If the king is inside the castle, he is not captured until he is surrounded on all four sides
 const kingInsideCastle =
-  (pieces: Array<Piece>) => (capturablePieces: Array<Piece>) =>
+  (pieces: readonly Piece[]) => (capturablePieces: readonly Piece[]) =>
     pipe(
       pieces,
-      A.findFirst(isKing),
+      RA.findFirst(isKing),
       O.chain(
         O.fromPredicate((king) => eqPosition.equals(king.position, castle))
       ),
@@ -237,7 +241,7 @@ const kingInsideCastle =
             (trueIfKingCapturable) =>
               pipe(
                 capturablePieces,
-                A.filter(
+                RA.filter(
                   (piece) =>
                     trueIfKingCapturable ||
                     !eqPosition.equals(king.position, piece.position)
@@ -250,11 +254,11 @@ const kingInsideCastle =
 // it is possible to capture the last defender by pinning it between an attacker piece and the occupied castle
 const capturePinnedDefender =
   (movedTo: Position) =>
-  (pieces: Array<Piece>) =>
-  (capturablePieces: Array<Piece>) =>
+  (pieces: readonly Piece[]) =>
+  (capturablePieces: readonly Piece[]) =>
     pipe(
       pieces,
-      A.findFirst(isKing),
+      RA.findFirst(isKing),
       O.chain(
         O.fromPredicate(
           (king) =>
@@ -265,7 +269,7 @@ const capturePinnedDefender =
       O.chain((king) =>
         pipe(
           pieces,
-          A.filter(isSameSide("defender")),
+          RA.filter(isSameSide("defender")),
           adjacentPieces(king.position),
           extractAdjacentPieces,
           adjacentPieces(movedTo),
@@ -275,7 +279,7 @@ const capturePinnedDefender =
       ),
       O.fold(
         () => capturablePieces,
-        (pinnedDefender) => A.append(pinnedDefender)(capturablePieces)
+        (pinnedDefender) => RA.append(pinnedDefender)(capturablePieces)
       )
     );
 
@@ -283,23 +287,32 @@ const capturePinnedDefender =
 // it is adjacent to a piece on the other Side, and beyond that is another piece on your Side
 export const capturedPieces =
   (position: Position, side: Side) =>
-  (pieces: Array<Piece>): Array<Piece> =>
+  (pieces: RNEA.ReadonlyNonEmptyArray<Piece>): readonly Piece[] =>
     pipe(
       pieces,
-      A.filter(isOtherSide(side)),
+      RA.filter(isOtherSide(side)),
       adjacentPieces(position),
       capturableEnemies(
         pipe(
           pieces,
-          A.filter(isSameSide(side)),
+          RA.filter(isSameSide(side)),
           alliesAndEmptyCastle(pieces),
           alliesInPositionToCapture(position)
         )
       ),
       R.compact,
-      R.collect((k, v) => v),
-      A.filter(isPiece),
+      R.collect<string, PieceOrCastle, PieceOrCastle>((k, v) => v),
+      RA.filter(isPiece),
       kingAdjacentToCastle(pieces),
       kingInsideCastle(pieces),
       capturePinnedDefender(position)(pieces)
+    );
+
+export const coerceToNonemptyArray =
+  <A>(fallback: RNEA.ReadonlyNonEmptyArray<A>) =>
+  (ra: readonly A[]) =>
+    pipe(
+      ra,
+      RNEA.fromReadonlyArray,
+      O.fold(() => fallback, identity)
     );

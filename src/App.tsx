@@ -1,11 +1,10 @@
 import { BrowserRouter as Router, Route } from "react-router-dom";
-import "App.css";
-import { ActiveGame } from "pages/ActiveGame/ActiveGame";
-import { Start } from "pages/Start/Start";
-import { useSocket } from "useSocket";
-import * as O from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/lib/function";
+import * as O from "fp-ts/lib/Option";
+import { useSocket } from "useSocket";
+import { Start } from "pages/Start/Start";
 import { WaitingGame } from "pages/WaitingGame/WaitingGame";
+import "App.css";
 
 const App = () => {
   const { socket } = useSocket();

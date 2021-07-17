@@ -39,7 +39,7 @@ export type Player = {
   id: string;
   side: Side;
 };
-type Pieces = Array<Piece>;
+type Pieces = RNEA.ReadonlyNonEmptyArray<Piece>;
 export type Game = {
   roomId: string;
   end: boolean;

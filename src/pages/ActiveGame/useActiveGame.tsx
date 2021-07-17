@@ -1,41 +1,54 @@
-import { useEffect, useState } from "react";
-import * as A from "fp-ts/lib/Array";
+import { useState } from "react";
 import { pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
+import * as RA from "fp-ts/lib/ReadonlyArray";
 import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
-import { eqPiece, eqPosition, setupPieces } from "setupBoard";
+import { Eq as eqString } from "fp-ts/lib/string";
+import { eqBoard, eqPiece, eqPosition } from "setupBoard";
 import { Game, Piece, Position, Side } from "types";
-import { capturedPieces, getAvailableSpaces, isSameSide } from "utils";
+import {
+  capturedPieces,
+  coerceToNonemptyArray,
+  getAvailableSpaces,
+  isSameSide,
+} from "utils";
 import { Socket } from "socket.io-client";
+import { useStableEffect } from "fp-ts-react-stable-hooks";
+import * as Eq from "fp-ts/lib/Eq";
+
+const eqSocket = { equals: (a: Socket, b: Socket) => true };
 
 export const useGame = (game: Game, myTurn: boolean, socket: Socket) => {
   const [currentPlayer, setCurrentPlayer] = useState<Side>(game.turn);
-  const [pieces, setPieces] = useState<Array<Piece>>(RNEA.last(game.history));
+  const [pieces, setPieces] = useState<RNEA.ReadonlyNonEmptyArray<Piece>>(
+    RNEA.last(game.history)
+  );
   const [availableSpaces, setAvailableSpaces] = useState<Array<Position>>([]);
 
   const { roomId } = game;
-  useEffect(() => {
-    console.log("moving");
-    socket.emit("move", { roomId, pieces });
-  }, [pieces, roomId, socket]);
+  useStableEffect(
+    () => {
+      console.log("moving");
+      socket.emit("move", { roomId, pieces });
+    },
+    [pieces, roomId, socket],
+    Eq.tuple(eqBoard, eqString, eqSocket)
+  );
 
   const movePiece = myTurn
     ? (from: Position, to: Position) => {
         setPieces(
           pipe(
             pieces,
-            A.map((p) =>
+            RNEA.map((p) =>
               eqPosition.equals(p.position, from) ? { ...p, position: to } : p
             ),
-            (p) => {
-              console.log(p);
-              return p;
-            },
             (movedPieces) =>
               pipe(movedPieces, capturedPieces(to, currentPlayer), (captured) =>
                 pipe(
                   movedPieces,
-                  A.filter((p) => !pipe(captured, A.elem(eqPiece)(p)))
+                  RA.filter((p) => !pipe(captured, RA.elem(eqPiece)(p))),
+                  coerceToNonemptyArray(pieces)
                 )
               )
           )
@@ -49,7 +62,7 @@ export const useGame = (game: Game, myTurn: boolean, socket: Socket) => {
   const setAvailableSpacesFor = (p: Position, side: Side) => () =>
     pipe(
       pieces,
-      A.findFirst((p0) => eqPosition.equals(p, p0.position)),
+      RA.findFirst((p0) => eqPosition.equals(p, p0.position)),
       O.chain(O.fromPredicate(isSameSide(side))),
       O.fold(
         () => [],
@@ -59,8 +72,9 @@ export const useGame = (game: Game, myTurn: boolean, socket: Socket) => {
               p,
               pipe(
                 pieces,
-                A.map((p0) => p0.position),
-                A.filter((p0) => !eqPosition.equals(p, p0))
+                RA.map((p0) => p0.position),
+                RA.filter((p0) => !eqPosition.equals(p, p0)),
+                RA.toArray
               )
             )
           )

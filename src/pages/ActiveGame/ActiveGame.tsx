@@ -1,6 +1,7 @@
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import * as A from "fp-ts/lib/Array";
+import * as REA from "fp-ts/lib/ReadonlyArray";
 import { pipe } from "fp-ts/lib/function";
 import { castle, eqPosition } from "setupBoard";
 
@@ -50,7 +51,7 @@ export const ActiveGame = ({
                       )}
                       occupant={pipe(
                         pieces,
-                        A.findFirst((piece) =>
+                        REA.findFirst((piece) =>
                           eqPosition.equals(piece.position, { row, col })
                         )
                       )}
