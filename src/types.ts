@@ -1,4 +1,5 @@
-import { Option } from "fp-ts/lib/Option";
+import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
+import * as O from "fp-ts/lib/Option";
 import * as Ord from "fp-ts/lib/Ord";
 
 export type Side = "defender" | "attacker";
@@ -21,7 +22,7 @@ export type Muscovite = {
 };
 export type Piece = King | Swede | Muscovite;
 export type Space = {
-  occupant: Option<Piece>;
+  occupant: O.Option<Piece>;
   isCastle: boolean;
   position: Position;
 };
@@ -33,8 +34,16 @@ export const ordRow: Ord.Ord<Position> = Ord.contramap((p: Position) => p.row)(
 export const ordCol: Ord.Ord<Position> = Ord.contramap((p: Position) => p.col)(
   Ord.ordNumber
 );
+export type Player = {
+  name: string;
+  id: string;
+  side: Side;
+};
+type Pieces = Array<Piece>;
 export type Game = {
+  roomId: string;
   end: boolean;
   turn: Side;
-  pieces: Array<Piece>;
+  winner: O.Option<Side>;
+  history: RNEA.ReadonlyNonEmptyArray<Pieces>;
 };

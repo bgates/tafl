@@ -69,6 +69,7 @@ export const Space = ({
     () => ({
       accept: currentPlayer === "attacker" ? "muscovite" : ["swede", "king"],
       drop: (item, monitor) => {
+        console.log(item, monitor.getItem(), { row, col });
         onMove(monitor.getItem(), { row, col });
       },
       collect: (monitor) => ({

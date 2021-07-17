@@ -13,8 +13,9 @@ export const useStart = (socket: Socket) => {
 
   useEffect(() => {
     socket.on("newGameCreated", (newRoomId) => {
-      setServerConfirmed(true);
+      console.log("a new game created");
       setRoomId(newRoomId);
+      setServerConfirmed(true);
     });
     socket.on("joinConfirmed", () => {
       setServerConfirmed(true);
@@ -41,6 +42,7 @@ export const useStart = (socket: Socket) => {
       if (game) {
         socket.emit("newGame");
       } else {
+        console.log("emit joining");
         socket.emit("joining", { roomId });
       }
     } else {

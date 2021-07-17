@@ -1,4 +1,4 @@
-import * as A from "fp-ts/lib/Array";
+import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
 import { Eq, struct } from "fp-ts/lib/Eq";
 import { pipe } from "fp-ts/lib/function";
 import { Eq as eqNumber } from "fp-ts/lib/number";
@@ -12,7 +12,7 @@ const createSwede = (position: T.Position): T.Swede => ({
   _tag: "swede",
   position,
 });
-const muscoviteStartPositions: Array<T.Position> = [
+const muscoviteStartPositions: RNEA.ReadonlyNonEmptyArray<T.Position> = [
   { row: 0, col: 3 },
   { row: 0, col: 4 },
   { row: 0, col: 5 },
@@ -30,7 +30,7 @@ const muscoviteStartPositions: Array<T.Position> = [
   { row: 8, col: 5 },
   { row: 7, col: 4 },
 ];
-const swedeStartPositions: Array<T.Position> = [
+const swedeStartPositions: RNEA.ReadonlyNonEmptyArray<T.Position> = [
   { row: 2, col: 4 },
   { row: 3, col: 4 },
   { row: 5, col: 4 },
@@ -41,11 +41,11 @@ const swedeStartPositions: Array<T.Position> = [
   { row: 4, col: 6 },
 ];
 export const castle: T.Position = { row: 4, col: 4 };
-export const king: T.King = { _tag: "king", position: castle};
+export const king: T.King = { _tag: "king", position: castle };
 
 export const setupPieces = () => [
-  ...pipe(muscoviteStartPositions, A.map(createMuscovite)),
-  ...pipe(swedeStartPositions, A.map(createSwede)),
+  ...pipe(muscoviteStartPositions, RNEA.map(createMuscovite)),
+  ...pipe(swedeStartPositions, RNEA.map(createSwede)),
   king,
 ];
 export const eqPosition: Eq<T.Position> = struct({
@@ -53,3 +53,6 @@ export const eqPosition: Eq<T.Position> = struct({
   col: eqNumber,
 });
 export const eqPiece: Eq<T.Piece> = struct({ position: eqPosition });
+
+export const eqBoard: Eq<RNEA.ReadonlyNonEmptyArray<T.Piece>> =
+  RNEA.getEq(eqPiece);

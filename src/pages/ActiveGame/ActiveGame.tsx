@@ -6,8 +6,20 @@ import { castle, eqPosition } from "setupBoard";
 
 import { Space } from "pages/ActiveGame/Space";
 import { useGame } from "pages/ActiveGame/useActiveGame";
+import { Socket } from "socket.io-client";
+import { Game, Side } from "types";
 
-export const ActiveGame = () => {
+export const ActiveGame = ({
+  game,
+  mySide,
+  myTurn,
+  socket,
+}: {
+  game: Game;
+  mySide: string;
+  myTurn: boolean;
+  socket: Socket;
+}) => {
   const {
     currentPlayer,
     availableSpaces,
@@ -15,10 +27,12 @@ export const ActiveGame = () => {
     resetAvailableSpaces,
     movePiece,
     pieces,
-  } = useGame();
+  } = useGame(game, myTurn, socket);
+  console.log(movePiece);
   return (
     <div className="grid place-content-center">
       <div>{currentPlayer}'s Turn</div>
+      <div>You are the {mySide}</div>
       <DndProvider backend={HTML5Backend}>
         <div>
           {pipe(

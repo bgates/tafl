@@ -5,6 +5,7 @@ import { Start } from "pages/Start/Start";
 import { useSocket } from "useSocket";
 import * as O from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/lib/function";
+import { WaitingGame } from "pages/WaitingGame/WaitingGame";
 
 const App = () => {
   const { socket } = useSocket();
@@ -20,10 +21,12 @@ const App = () => {
           () => <div>NO SOCKET</div>,
           (s) => (
             <Router>
-              <Route path="/">
+              <Route path="/" exact>
                 <Start socket={s} />
               </Route>
-              <Route path="/game" component={ActiveGame} />
+              <Route path="/game">
+                <WaitingGame socket={s} />
+              </Route>
             </Router>
           )
         )

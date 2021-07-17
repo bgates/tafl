@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import * as O from "fp-ts/lib/Option";
-import { Socket } from "socket.io-client";
-import qs from "qs";
-import { Game, Side } from "types";
+import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/function";
+import * as O from "fp-ts/lib/Option";
+import qs from "qs";
+import { Socket } from "socket.io-client";
+import { Game, Player, Side } from "types";
 
 type QueryParam =
   | string
@@ -14,7 +15,7 @@ type QueryParam =
 const validQueryParam = (item: QueryParam): item is string =>
   typeof item === "string";
 export const useWaitingGame = (socket: Socket) => {
-  const [myRoom, setMyRoom] = useState<O.Option<string>>(O.none);
+  const roomIdRef = useRef<string>();
   const [statusMessage, setStatusMessage] = useState<O.Option<string>>(O.none);
   const [opponent, setOpponent] = useState<O.Option<string>>(O.none);
   const [myTurn, setMyTurn] = useState(false);
@@ -22,9 +23,22 @@ export const useWaitingGame = (socket: Socket) => {
   const [joinError, setJoinError] = useState(false);
   const [game, setGame] = useState<Game>();
   const socketID = useRef();
+  const needsToStart = useRef(true);
+
+  const gameStart = (gameState: Game, players: Array<Player>) => {
+    pipe(
+      players,
+      A.findFirst((player) => player.id !== socketID.current),
+      O.map((opponent) => opponent.name),
+      setOpponent
+    );
+    setGame(gameState);
+    setTurn(gameState.turn);
+    setMessage();
+  };
 
   const safeSetMyRoom = (rm: QueryParam) =>
-    validQueryParam(rm) && setMyRoom(O.some(rm));
+    validQueryParam(rm) ? (roomIdRef.current = rm) : null;
   useEffect(() => {
     //Getting the room and the username information from the url
     //Then emit to back end to process
@@ -32,9 +46,10 @@ export const useWaitingGame = (socket: Socket) => {
       qs.parse(window.location.search, {
         ignoreQueryPrefix: true,
       }),
-      ({ room, name }) => {
-        safeSetMyRoom(room);
-        socket.emit("newRoomJoin", { room, name });
+      ({ roomId, name }) => {
+        safeSetMyRoom(roomId);
+        needsToStart.current && socket.emit("newRoomJoin", { roomId, name });
+        needsToStart.current = false;
       }
     );
 
@@ -42,16 +57,8 @@ export const useWaitingGame = (socket: Socket) => {
     //the actual game or the wait screen or redirect back to the main page
     socket.on(
       "starting",
-      ({
-        gameState,
-        players,
-        turn,
-      }: {
-        gameState: Game;
-        players: Array<Array<string>>;
-        turn: Side;
-      }) => {
-        gameStart(gameState, players, turn);
+      ({ gameState, players }: { gameState: Game; players: Array<Player> }) => {
+        gameStart(gameState, players);
       }
     );
     socket.on("joinError", () => setJoinError(true));
@@ -64,28 +71,11 @@ export const useWaitingGame = (socket: Socket) => {
     });
 
     //Game play logic events
-    // socket.on('update', ({gameState, turn}) => handleUpdate(gameState, turn))
     // socket.on('winner', ({gameState,id}) => handleWin(id, gameState))
     // socket.on('draw', ({gameState}) => handleDraw(gameState))
 
     // socket.on('restart', ({gameState, turn}) => handleRestart(gameState, turn))
   });
-
-  //Setting the states to start a game when new user join
-  const gameStart = (
-    gameState: Game,
-    players: Array<Array<string>>,
-    turn: Side
-  ) => {
-    const opponent = players.filter(
-      ([id, name]) => id !== socketID.current
-    )[0][1];
-    setOpponent(O.some(opponent));
-    // setState({opponentPlayer: [opponent, 0], end:false})
-    setGame(gameState);
-    setTurn(turn);
-    setMessage();
-  };
 
   //When some one make a move, emit the event to the back end for handling
   /*
@@ -96,13 +86,6 @@ handleClick = (index) => {
   }
 }
 */
-
-  //Setting the states each move when the game haven't ended (no wins or draw)
-  const handleUpdate = (gameState: Game, turn: Side) => {
-    setGame(gameState);
-    setTurn(turn);
-    setMessage();
-  };
 
   //Setting the states when some one wins
   /*
@@ -159,4 +142,12 @@ handleRestart(gameState, turn){
       O.getOrElse(() => false),
       setMyTurn
     );
+
+  return {
+    opponent,
+    myTurn,
+    mySide,
+    roomIdRef,
+    game,
+  };
 };

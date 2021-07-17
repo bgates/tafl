@@ -27,8 +27,9 @@ export const Start = ({ socket }: { socket: Socket }) => {
     onSubmit,
     stepBack,
   } = useStart(socket);
+  console.log({ name, roomId, step, serverConfirmed });
   return serverConfirmed ? (
-    <Redirect to={`/game?room=${roomId}&name=${name}`} />
+    <Redirect to={`/game?roomId=${roomId}&name=${name}`} />
   ) : (
     pipe(
       step,
