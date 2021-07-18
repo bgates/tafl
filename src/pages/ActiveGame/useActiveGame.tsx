@@ -15,8 +15,7 @@ import {
 import { Socket } from "socket.io-client";
 import { useStableEffect } from "fp-ts-react-stable-hooks";
 import * as Eq from "fp-ts/lib/Eq";
-
-const eqSocket = { equals: (a: Socket, b: Socket) => true };
+import { eqSocket } from "useSocket";
 
 export const useGame = (game: Game, myTurn: boolean, socket: Socket) => {
   const [currentPlayer, setCurrentPlayer] = useState<Side>(game.turn);
@@ -28,7 +27,6 @@ export const useGame = (game: Game, myTurn: boolean, socket: Socket) => {
   const { roomId } = game;
   useStableEffect(
     () => {
-      console.log("moving");
       socket.emit("move", { roomId, pieces });
     },
     [pieces, roomId, socket],

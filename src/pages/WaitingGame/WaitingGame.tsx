@@ -5,9 +5,9 @@ import { useWaitingGame } from "./useWaitingGame";
 import { pipe } from "fp-ts/lib/function";
 
 export const WaitingGame = ({ socket }: { socket: Socket }) => {
-  const { opponent, myTurn, mySide, game, roomIdRef } = useWaitingGame(socket);
+  const { opponent, myTurn, mySide, game, roomId } = useWaitingGame(socket);
 
-  console.log({ opponent, myTurn, mySide, game });
+  // console.log({ opponent, myTurn, mySide, game, roomId });
 
   const side = pipe(
     mySide,
@@ -19,9 +19,13 @@ export const WaitingGame = ({ socket }: { socket: Socket }) => {
   ) : (
     <div>
       <h2>WE'LL WAIT</h2>
-      {roomIdRef.current ? (
-        <div>You are in room {roomIdRef.current}</div>
-      ) : null}
+      {pipe(
+        roomId,
+        O.fold(
+          () => null,
+          (id) => <div>You are in room {id}</div>
+        )
+      )}
     </div>
   );
 };

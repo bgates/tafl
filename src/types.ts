@@ -46,4 +46,8 @@ export type Game = {
   turn: Side;
   winner: O.Option<Side>;
   history: RNEA.ReadonlyNonEmptyArray<Pieces>;
+  players: {
+    attacker: O.Option<Player>;
+    defender: O.Option<Player>;
+  };
 };

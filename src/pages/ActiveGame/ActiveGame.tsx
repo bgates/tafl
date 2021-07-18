@@ -29,7 +29,7 @@ export const ActiveGame = ({
     movePiece,
     pieces,
   } = useGame(game, myTurn, socket);
-  console.log(movePiece);
+  console.log(movePiece, myTurn);
   return (
     <div className="grid place-content-center">
       <div>{currentPlayer}'s Turn</div>

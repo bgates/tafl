@@ -17,3 +17,6 @@ export const useSocket = () => {
 
   return { socket };
 };
+
+// assume socket is stable
+export const eqSocket = { equals: (a: Socket, b: Socket) => true };
