@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import * as A from "fp-ts/lib/Array";
-import * as Ap from "fp-ts/lib/Apply";
 import * as Eq from "fp-ts/lib/Eq";
 import { pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
@@ -22,10 +21,9 @@ const validQueryParam = (item: QueryParam): item is string =>
 export const useWaitingGame = (socket: Socket) => {
   const [roomId, setRoomId] = useState<O.Option<string>>(O.none);
   const [opponent, setOpponent] = useState<O.Option<string>>(O.none);
-  const [myTurn, setMyTurn] = useState(false);
   const [mySide, setMySide] = useState<O.Option<Side>>(O.none);
   const [joinError, setJoinError] = useState(false);
-  const [game, setGame] = useState<Game>();
+  const [game, setGame] = useState<O.Option<Game>>(O.none);
   const socketID = useRef();
   const needsToStart = useRef(true);
 
@@ -34,12 +32,9 @@ export const useWaitingGame = (socket: Socket) => {
       players,
       A.findFirst((player) => player.id !== socketID.current),
       O.map((opponent) => opponent.name),
-      (opp) => {
-        setOpponent(opp);
-        setTurn(gameState, opp);
-      }
+      setOpponent
     );
-    setGame(gameState);
+    setGame(O.some(gameState));
   };
 
   const safeSetMyRoom = (rm: QueryParam) =>
@@ -81,34 +76,8 @@ export const useWaitingGame = (socket: Socket) => {
     Eq.tuple(eqSocket, O.getEq(eqString))
   );
 
-  const setTurn = (game: Game, opp: O.Option<string>) =>
-    pipe(
-      mySide,
-      O.map((ms) => ms === game.turn),
-      O.fold(
-        () =>
-          pipe(
-            Ap.sequenceT(O.Apply)(game.players.attacker, opp),
-            O.map(
-              ([attacker, o]) => game.turn === "defender" && attacker.name === o
-            ),
-            O.getOrElse(() => false)
-          ) ||
-          pipe(
-            Ap.sequenceT(O.Apply)(game.players.defender, opp),
-            O.map(
-              ([defender, o]) => game.turn === "attacker" && defender.name === o
-            ),
-            O.getOrElse(() => false)
-          ),
-        (turn) => turn
-      ),
-      setMyTurn
-    );
-
   return {
     opponent,
-    myTurn,
     mySide,
     roomId,
     game,

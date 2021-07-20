@@ -53,6 +53,3 @@ export const eqPosition: Eq.Eq<T.Position> = Eq.struct({
   col: eqNumber,
 });
 export const eqPiece: Eq.Eq<T.Piece> = Eq.struct({ position: eqPosition });
-
-export const eqBoard: Eq.Eq<RNEA.ReadonlyNonEmptyArray<T.Piece>> =
-  RNEA.getEq(eqPiece);

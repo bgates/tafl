@@ -3,8 +3,7 @@ import { pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import * as RA from "fp-ts/lib/ReadonlyArray";
 import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
-import { Eq as eqString } from "fp-ts/lib/string";
-import { eqBoard, eqPiece, eqPosition } from "setupBoard";
+import { eqPiece, eqPosition } from "setupBoard";
 import { Game, Piece, Position, Side } from "types";
 import {
   capturedPieces,
@@ -13,11 +12,8 @@ import {
   isSameSide,
 } from "utils";
 import { Socket } from "socket.io-client";
-import { useStableEffect } from "fp-ts-react-stable-hooks";
-import * as Eq from "fp-ts/lib/Eq";
-import { eqSocket } from "useSocket";
 
-export const useGame = (game: Game, myTurn: boolean, socket: Socket) => {
+export const useGame = (game: Game, mySide: Side, socket: Socket) => {
   const [currentPlayer, setCurrentPlayer] = useState<Side>(game.turn);
   const [pieces, setPieces] = useState<RNEA.ReadonlyNonEmptyArray<Piece>>(
     RNEA.last(game.history)
@@ -25,37 +21,33 @@ export const useGame = (game: Game, myTurn: boolean, socket: Socket) => {
   const [availableSpaces, setAvailableSpaces] = useState<Array<Position>>([]);
 
   const { roomId } = game;
-  useStableEffect(
-    () => {
-      socket.emit("move", { roomId, pieces });
-    },
-    [pieces, roomId, socket],
-    Eq.tuple(eqBoard, eqString, eqSocket)
-  );
 
-  const movePiece = myTurn
-    ? (from: Position, to: Position) => {
-        setPieces(
-          pipe(
-            pieces,
-            RNEA.map((p) =>
-              eqPosition.equals(p.position, from) ? { ...p, position: to } : p
-            ),
-            (movedPieces) =>
-              pipe(movedPieces, capturedPieces(to, currentPlayer), (captured) =>
-                pipe(
-                  movedPieces,
-                  RA.filter((p) => !pipe(captured, RA.elem(eqPiece)(p))),
-                  coerceToNonemptyArray(pieces)
-                )
+  const handleMove = (pieces: RNEA.ReadonlyNonEmptyArray<Piece>) => {
+    socket.emit("move", { roomId, pieces });
+    setPieces(pieces);
+  };
+
+  const setNextPlayer = () =>
+    setCurrentPlayer(currentPlayer === "attacker" ? "defender" : "attacker");
+  const movePiece = (from: Position, to: Position) =>
+    currentPlayer === mySide
+      ? pipe(
+          pieces,
+          RNEA.map((p) =>
+            eqPosition.equals(p.position, from) ? { ...p, position: to } : p
+          ),
+          (movedPieces) =>
+            pipe(movedPieces, capturedPieces(to, currentPlayer), (captured) =>
+              pipe(
+                movedPieces,
+                RA.filter((p) => !pipe(captured, RA.elem(eqPiece)(p))),
+                coerceToNonemptyArray(pieces)
               )
-          )
-        );
-        setCurrentPlayer(
-          currentPlayer === "attacker" ? "defender" : "attacker"
-        );
-      }
-    : () => {};
+            ),
+          handleMove,
+          setNextPlayer
+        )
+      : {};
 
   const setAvailableSpacesFor = (p: Position, side: Side) => () =>
     pipe(
@@ -81,13 +73,12 @@ export const useGame = (game: Game, myTurn: boolean, socket: Socket) => {
     );
   const resetAvailableSpaces = () => setAvailableSpaces([]);
 
-  //Setting the states each move when the game haven't ended (no wins or draw)
-  const handleUpdate = (gameState: Game, turn: Side) => {
+  const handleUpdate = ({ gameState }: { gameState: Game }) => {
     setPieces(RNEA.last(gameState.history));
-    setCurrentPlayer(turn);
-    // setMessage();
+    setCurrentPlayer(gameState.turn);
+    console.log(gameState.turn, mySide, gameState.turn === mySide);
   };
-  socket.on("update", ({ gameState, turn }) => handleUpdate(gameState, turn));
+  socket.on("update", handleUpdate);
   return {
     currentPlayer,
     availableSpaces,

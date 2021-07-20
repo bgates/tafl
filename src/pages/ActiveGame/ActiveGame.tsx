@@ -13,12 +13,10 @@ import { Game, Side } from "types";
 export const ActiveGame = ({
   game,
   mySide,
-  myTurn,
   socket,
 }: {
   game: Game;
-  mySide: string;
-  myTurn: boolean;
+  mySide: Side;
   socket: Socket;
 }) => {
   const {
@@ -28,8 +26,8 @@ export const ActiveGame = ({
     resetAvailableSpaces,
     movePiece,
     pieces,
-  } = useGame(game, myTurn, socket);
-  console.log(movePiece, myTurn);
+  } = useGame(game, mySide, socket);
+
   return (
     <div className="grid place-content-center">
       <div>{currentPlayer}'s Turn</div>
