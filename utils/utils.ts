@@ -1,5 +1,3 @@
-import * as A from "fp-ts/lib/Array";
-import { pipe } from "fp-ts/lib/function";
 import { Side } from "./types";
 
 const randFrom = (as: Array<string>) =>
