@@ -2,7 +2,7 @@ import { Choice } from "pages/Start/Choice";
 import { InputForm } from "pages/Start/InputForm";
 import { Loading } from "pages/Start/Loading";
 import { Error } from "pages/Start/Error";
-import logo from "logo.svg";
+import banner from "banner.jpg";
 import * as M from "pattern-matching-ts/lib/match";
 
 import { Redirect } from "react-router-dom";
@@ -34,7 +34,7 @@ export const Start = ({ socket }: { socket: Socket }) => {
       step,
       (s) => ({ _tag: `${s}` }),
       M.match({
-        1: () => <Choice logo={logo} onChoice={onChoice} />,
+        1: () => <Choice banner={banner} onChoice={onChoice} />,
         2: () => (
           <>
             <Loading loading={loading} />
