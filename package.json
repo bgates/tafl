@@ -8,7 +8,7 @@
     "start": "npm run build && node server",
     "dev": "nodemon server",
     "build": "tsc --project ./",
-    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false && npm install --prefix tafl-client && npm run build --prefix tafl-client"
+    "heroku-postbuild": "cd ./tafl-client && NPM_CONFIG_PRODUCTION=false npm install && npm run build"
   },
   "keywords": [],
   "author": "",

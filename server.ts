@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 4000;
 
 const app = express();
 const server = http.createServer(app);
-app.use(express.static("tafl-client/build"));
+app.use(express.static(__dirname + "/tafl-client/build"));
 
 const io = new Server(server, {
   cors: {
