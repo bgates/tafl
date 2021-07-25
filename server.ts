@@ -1,3 +1,4 @@
+import express from "express";
 import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
@@ -11,7 +12,10 @@ import { randRoom, randSide } from "./utils/utils";
 
 const PORT = process.env.PORT || 4000;
 
-const server = http.createServer();
+const app = express();
+const server = http.createServer(app);
+app.use(express.static("tafl-client/build"));
+
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -223,4 +227,4 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+server.listen(PORT, () => console.log(`Listening really on port ${PORT}`));
