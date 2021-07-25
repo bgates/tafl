@@ -179,7 +179,6 @@ io.on("connection", (socket) => {
     }
     */
 
-  //Listener event for a new game
   socket.on("playAgainRequest", (roomId) => {
     actInRoom(roomId, (room) => {
       room.game = createGame(roomId);
