@@ -2,13 +2,31 @@ import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/function";
 import { Side } from "./types";
 
-const hexChars = "0123456789abcdef";
+const randFrom = (as: Array<string>) =>
+  as[Math.floor(Math.random() * as.length)];
 export const randRoom = () =>
-  pipe(
-    A.range(1, 16),
-    A.map((n) => hexChars[Math.floor(Math.random() * 16)]),
-    A.reduce("", (acc, curr) => acc + curr)
-  );
+  `${randFrom(names)}s-${randFrom(items)}-${Math.floor(Math.random() * 1000)}`;
 
 export const randSide: () => Side = () =>
   Math.random() > 0.5 ? "attacker" : "defender";
+
+const names = [
+  "Thor",
+  "Odin",
+  "Loki",
+  "Sven",
+  "Bjorn",
+  "Frida",
+  "Helga",
+  "Hilda",
+  "Sigrid",
+];
+const items = [
+  "Hammer",
+  "Beard",
+  "Helmet",
+  "Sword",
+  "Shield",
+  "Spear",
+  "Steed",
+];
