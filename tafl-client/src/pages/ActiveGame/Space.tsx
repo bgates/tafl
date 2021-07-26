@@ -1,7 +1,7 @@
 import { constVoid, flow, pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import * as M from "pattern-matching-ts/lib/match";
-import { useDrag, useDrop } from "react-dnd";
+import { useMultiDrag, useMultiDrop } from "react-dnd-multi-backend";
 import { Piece, Position, Side } from "types";
 
 const GenericPiece = ({
@@ -16,14 +16,19 @@ const GenericPiece = ({
   depiction: string;
 }) =>
   pipe(
-    useDrag(() => ({
-      type,
-      item: { row, col },
+    useMultiDrag({
+      item: { type, row, col },
       collect: (monitor) => ({
         isDragging: !!monitor.isDragging(),
       }),
-    })),
-    ([{ isDragging }, drag]) => (
+    }),
+    ([
+      [{ isDragging }, drag],
+      {
+        html5: [html5Drag],
+        touch: [touchDrag],
+      },
+    ]) => (
       <div
         ref={drag}
         className={`w-8 h-8 grid display-content-center opacity-${
@@ -65,18 +70,20 @@ export const Space = ({
   onLeave: () => void;
   onMove: (from: Position, to: Position) => void;
 }) => {
-  const [{ isOver }, drop] = useDrop(
-    () => ({
-      accept: currentPlayer === "attacker" ? "muscovite" : ["swede", "king"],
-      drop: (item, monitor) => {
-        onMove(monitor.getItem(), { row, col });
-      },
-      collect: (monitor) => ({
-        isOver: !!monitor.isOver(),
-      }),
+  const [
+    [_props, drop],
+    {
+      html5: [],
+    },
+  ] = useMultiDrop({
+    accept: currentPlayer === "attacker" ? "muscovite" : ["swede", "king"],
+    drop: (_, monitor) => {
+      onMove(monitor.getItem(), { row, col });
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
     }),
-    [row, col, currentPlayer]
-  );
+  });
   return (
     <div
       className={

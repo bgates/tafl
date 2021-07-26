@@ -1,10 +1,10 @@
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd-multi-backend";
 import * as A from "fp-ts/lib/Array";
 import * as REA from "fp-ts/lib/ReadonlyArray";
 import { pipe } from "fp-ts/lib/function";
 import { castle, eqPosition } from "setupBoard";
 
+import { HTML5toTouch } from "rdndmb-html5-to-touch";
 import { Space } from "pages/ActiveGame/Space";
 import { useGame } from "pages/ActiveGame/useActiveGame";
 import { Socket } from "socket.io-client";
@@ -32,7 +32,7 @@ export const ActiveGame = ({
     <div className="grid place-content-center">
       <div>{currentPlayer}'s Turn</div>
       <div>You are the {mySide}</div>
-      <DndProvider backend={HTML5Backend}>
+      <DndProvider options={HTML5toTouch}>
         <div>
           {pipe(
             A.range(0, 8),
