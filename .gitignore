@@ -11,6 +11,7 @@
 
 # production
 /build
+/dist
 /tafl-client/build
 
 # misc

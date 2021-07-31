@@ -69,53 +69,49 @@ export const Space = ({
   onHover: () => void;
   onLeave: () => void;
   onMove: (from: Position, to: Position) => void;
-}) => {
-  const [
-    [_props, drop],
-    {
-      html5: [],
-    },
-  ] = useMultiDrop({
-    accept: currentPlayer === "attacker" ? "muscovite" : ["swede", "king"],
-    drop: (_, monitor) => {
-      onMove(monitor.getItem(), { row, col });
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
+}) =>
+  pipe(
+    useMultiDrop({
+      accept: currentPlayer === "attacker" ? "muscovite" : ["swede", "king"],
+      drop: (_, monitor) => {
+        onMove(monitor.getItem(), { row, col });
+      },
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
     }),
-  });
-  return (
-    <div
-      className={
-        isCastle
-          ? "bg-red-500 text-white border"
-          : available
-          ? "bg-blue-200 border"
-          : "border"
-      }
-      onMouseEnter={pipe(
-        occupant,
-        O.fold(
-          () => constVoid,
-          () => onHover
-        )
-      )}
-      onMouseLeave={onLeave}
-    >
-      {pipe(
-        occupant,
-        O.fold(
-          () => <div className="w-8 h-8" ref={drop}></div>,
-          flow(
-            M.match({
-              king: () => <King row={row} col={col} />,
-              swede: () => <Swede row={row} col={col} />,
-              muscovite: () => <Muscovite row={row} col={col} />,
-              _: () => <div />,
-            })
+    ([[_, drop]]) => (
+      <div
+        className={
+          isCastle
+            ? "bg-red-500 text-white border"
+            : available
+            ? "bg-blue-200 border"
+            : "border"
+        }
+        onMouseEnter={pipe(
+          occupant,
+          O.fold(
+            () => constVoid,
+            () => onHover
           )
-        )
-      )}
-    </div>
+        )}
+        onMouseLeave={onLeave}
+      >
+        {pipe(
+          occupant,
+          O.fold(
+            () => <div className="w-8 h-8" ref={drop}></div>,
+            flow(
+              M.match({
+                king: () => <King row={row} col={col} />,
+                swede: () => <Swede row={row} col={col} />,
+                muscovite: () => <Muscovite row={row} col={col} />,
+                _: () => <div />,
+              })
+            )
+          )
+        )}
+      </div>
+    )
   );
-};

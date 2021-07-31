@@ -5,11 +5,14 @@ import { Eq as eqNumber } from "fp-ts/lib/number";
 import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
 import { Player } from "./player";
 
-export type Side = "defender" | "attacker";
+export const attacker = "attacker";
+export const defender = "defender";
+export type Side = typeof defender | typeof attacker;
 export type Position = {
   row: number;
   col: number;
 };
+export const MAX_SIDE = 8;
 export type King = {
   readonly _tag: "king";
   position: Position;
@@ -55,3 +58,11 @@ export const eqPiece: Eq.Eq<Piece> = Eq.struct({ position: eqPosition });
 
 export const eqBoard: Eq.Eq<RNEA.ReadonlyNonEmptyArray<Piece>> =
   RNEA.getEq(eqPiece);
+
+export const isKing = (piece: Piece) => piece._tag === "king";
+
+export const isEdge = (position: Position) =>
+  position.row === 0 ||
+  position.col === 0 ||
+  position.row === MAX_SIDE ||
+  position.col === MAX_SIDE;

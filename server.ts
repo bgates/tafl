@@ -5,7 +5,13 @@ import * as O from "fp-ts/lib/Option";
 import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
 import http from "http";
 import { Server } from "socket.io";
-import { createGame, missingSide, moveTo, switchTurn } from "./utils/game";
+import {
+  createGame,
+  missingSide,
+  moveTo,
+  setWinner,
+  switchTurn,
+} from "./utils/game";
 import { Player, makePlayer } from "./utils/player";
 import { eqBoard, Game, Piece } from "./utils/types";
 import { randRoom, randSide } from "./utils/utils";
@@ -152,7 +158,11 @@ io.on("connection", (socket) => {
                 ),
                 O.fold(
                   () => {
-                    room.game = pipe(moveTo(game, pieces), switchTurn);
+                    room.game = pipe(
+                      moveTo(game, pieces),
+                      switchTurn,
+                      setWinner
+                    );
                     io.to(roomId).emit("update", {
                       gameState: room.game,
                     });
