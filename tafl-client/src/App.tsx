@@ -12,7 +12,7 @@ const App = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Hnefatafl</h1>
+        <h1>Sami Tablut</h1>
       </header>
       {pipe(
         socket,
