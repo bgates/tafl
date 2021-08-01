@@ -10,7 +10,7 @@ export const ChoiceButton = ({
   label,
   onChoice,
 }: ChoiceButtonProps) => (
-  <button className="border rounded p-2" onClick={() => onChoice(choice)}>
+  <button className="border rounded p-2 m-4" onClick={() => onChoice(choice)}>
     {label}
   </button>
 );

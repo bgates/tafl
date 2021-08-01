@@ -89,7 +89,11 @@ export const ActiveGame = ({
         winner,
         O.fold(
           () => {},
-          (w) => <button onClick={playAgain}>Play again?</button>
+          (w) => (
+            <button className="border rounded p-2" onClick={playAgain}>
+              Play again?
+            </button>
+          )
         )
       )}
     </div>
