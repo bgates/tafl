@@ -38,7 +38,7 @@ export const missingSide = (game: Game): Side =>
     )
   );
 
-const defenderHasWon = (game: Game): O.Option<Side> =>
+const checkDefenderWon = (game: Game): O.Option<Side> =>
   pipe(
     game.history,
     RNEA.last,
@@ -47,22 +47,19 @@ const defenderHasWon = (game: Game): O.Option<Side> =>
     O.map((_) => defender)
   );
 
-const attackerHasWon = (game: Game): O.Option<Side> =>
+const checkAttackerWon = (game: Game): O.Option<Side> =>
   pipe(
     game.history,
     RNEA.last,
     RA.findFirstMap((piece: Piece) =>
       isKing(piece) ? O.some(piece.position) : O.none
     ),
-    O.map(isEdge),
+    O.chain(O.fromPredicate(isEdge)),
     O.map((_) => attacker)
   );
 
 export const setWinner = (game: Game): Game => ({
   ...game,
-  winner: pipe(
-    game,
-    attackerHasWon,
-    O.chain((_) => defenderHasWon(game))
-  ),
+  winner:
+    game.turn === attacker ? checkAttackerWon(game) : checkDefenderWon(game),
 });

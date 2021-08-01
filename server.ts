@@ -144,7 +144,7 @@ io.on("connection", (socket) => {
     }: {
       roomId: string;
       pieces: RNEA.ReadonlyNonEmptyArray<Piece>;
-    }) => {
+    }) =>
       actInRoom(roomId, (room) =>
         pipe(
           O.fromNullable(room.game),
@@ -160,8 +160,8 @@ io.on("connection", (socket) => {
                   () => {
                     room.game = pipe(
                       moveTo(game, pieces),
-                      switchTurn,
-                      setWinner
+                      setWinner,
+                      switchTurn
                     );
                     io.to(roomId).emit("update", {
                       gameState: room.game,
@@ -173,8 +173,7 @@ io.on("connection", (socket) => {
             }
           )
         )
-      );
-    }
+      )
   );
 
   socket.on("playAgainRequest", (roomId) => {

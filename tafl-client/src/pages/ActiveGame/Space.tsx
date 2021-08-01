@@ -50,6 +50,11 @@ const Muscovite = ({ row, col }: { row: number; col: number }) => (
 const King = ({ row, col }: { row: number; col: number }) => (
   <GenericPiece row={row} col={col} type="king" depiction="K" />
 );
+const noopDrop = () => ({
+  accept: "",
+  drop: (_: unknown, __: unknown) => undefined,
+  collect: (_: unknown) => {},
+});
 export const Space = ({
   available,
   occupant,
@@ -74,14 +79,11 @@ export const Space = ({
   pipe(
     currentPlayer,
     O.fold<Side, DropTargetHookSpec<unknown, DropTargetMonitor, unknown>>(
-      () => ({
-        accept: "",
-        drop: (_, __) => undefined,
-        collect: (_) => {},
-      }),
+      noopDrop,
       (cp) => ({
-        accept: cp === "attacker" ? "muscovite" : ["swede", "king"],
+        accept: cp === "attacker" ? ["muscovite", "hack"] : ["swede", "king"],
         drop: (_, monitor) => onMove(monitor.getItem(), { row, col }),
+        canDrop: () => available,
         collect: (monitor) => ({
           isOver: !!monitor.isOver(),
         }),

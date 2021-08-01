@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import * as RA from "fp-ts/lib/ReadonlyArray";
@@ -110,8 +110,11 @@ export const useGame = (game: Game, mySide: Side, socket: Socket) => {
     O.getOrElse(() => "")
   );
   const playAgain = () => socket.emit("playAgainRequest", { roomId });
-  socket.on("update", handleUpdate);
-  socket.on("restart", handleRestart);
+
+  useEffect(() => {
+    socket.on("update", handleUpdate);
+    socket.on("restart", handleRestart);
+  }, [socket]);
   return {
     currentPlayer,
     playerName,
