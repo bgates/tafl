@@ -109,7 +109,6 @@ io.on("connection", (socket) => {
     }
 
     socket.join(roomId);
-    console.log(name, "joining");
     addPlayerToRoom(name, roomId, socket.id);
     //The right amount of people so we start the game
     //Assign the piece to each player in the backend data structure and then
@@ -176,7 +175,7 @@ io.on("connection", (socket) => {
       )
   );
 
-  socket.on("playAgainRequest", (roomId) => {
+  socket.on("playAgainRequest", ({ roomId }) => {
     actInRoom(roomId, (room) => {
       room.game = createGame(roomId);
       //Reassign new piece so a player can't always go first

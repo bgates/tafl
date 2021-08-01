@@ -38,7 +38,7 @@ export const missingSide = (game: Game): Side =>
     )
   );
 
-const checkDefenderWon = (game: Game): O.Option<Side> =>
+const checkAttackerWon = (game: Game): O.Option<Side> =>
   pipe(
     game.history,
     RNEA.last,
@@ -47,7 +47,7 @@ const checkDefenderWon = (game: Game): O.Option<Side> =>
     O.map((_) => defender)
   );
 
-const checkAttackerWon = (game: Game): O.Option<Side> =>
+const checkDefenderWon = (game: Game): O.Option<Side> =>
   pipe(
     game.history,
     RNEA.last,

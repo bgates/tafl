@@ -51,7 +51,7 @@ const King = ({ row, col }: { row: number; col: number }) => (
   <GenericPiece row={row} col={col} type="king" depiction="K" />
 );
 const noopDrop = () => ({
-  accept: "",
+  accept: ["", ""],
   drop: (_: unknown, __: unknown) => undefined,
   collect: (_: unknown) => {},
 });
