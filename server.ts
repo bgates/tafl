@@ -176,18 +176,6 @@ io.on("connection", (socket) => {
       );
     }
   );
-  /*
-    if (currentBoard.checkWinner(piece)) {
-      io.to(room).emit("winner", {
-        gameState: currentBoard.game,
-        id: socket.id,
-      });
-    } else if (currentBoard.checkDraw()) {
-      io.to(room).emit("draw", { gameState: currentBoard.game });
-    } else {
-        /
-    }
-    */
 
   socket.on("playAgainRequest", (roomId) => {
     actInRoom(roomId, (room) => {
@@ -204,7 +192,6 @@ io.on("connection", (socket) => {
 
       io.to(roomId).emit("restart", {
         gameState: room.game,
-        turn: room.game.turn,
       });
     });
   });

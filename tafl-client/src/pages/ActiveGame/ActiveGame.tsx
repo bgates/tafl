@@ -1,5 +1,6 @@
 import { DndProvider } from "react-dnd-multi-backend";
 import * as A from "fp-ts/lib/Array";
+import * as O from "fp-ts/lib/Option";
 import * as REA from "fp-ts/lib/ReadonlyArray";
 import { pipe } from "fp-ts/lib/function";
 import { castle, eqPosition } from "setupBoard";
@@ -21,16 +22,26 @@ export const ActiveGame = ({
 }) => {
   const {
     currentPlayer,
+    playerName,
     availableSpaces,
     setAvailableSpacesFor,
     resetAvailableSpaces,
     movePiece,
     pieces,
+    winner,
+    playAgain,
   } = useGame(game, mySide, socket);
 
   return (
     <div className="grid place-content-center">
-      <div>{currentPlayer}'s Turn</div>
+      {pipe(
+        winner,
+        O.fold(
+          () => <div>{playerName}'s Turn</div>,
+          (victor) => <div>{victor} Wins!</div>
+        )
+      )}
+
       <div>You are the {mySide}</div>
       <DndProvider options={HTML5toTouch}>
         <div>
@@ -54,9 +65,12 @@ export const ActiveGame = ({
                         )
                       )}
                       isCastle={eqPosition.equals(castle, { row, col })}
-                      onHover={setAvailableSpacesFor(
-                        { row, col },
-                        currentPlayer
+                      onHover={pipe(
+                        currentPlayer,
+                        O.fold(
+                          () => () => {},
+                          (cp) => setAvailableSpacesFor({ row, col }, cp)
+                        )
                       )}
                       onLeave={resetAvailableSpaces}
                       onMove={movePiece}
@@ -71,6 +85,13 @@ export const ActiveGame = ({
           )}
         </div>
       </DndProvider>
+      {pipe(
+        winner,
+        O.fold(
+          () => {},
+          (w) => <button onClick={playAgain}>Play again?</button>
+        )
+      )}
     </div>
   );
 };

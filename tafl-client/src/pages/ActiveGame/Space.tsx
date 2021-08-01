@@ -1,6 +1,7 @@
 import { constVoid, flow, pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import * as M from "pattern-matching-ts/lib/match";
+import { DropTargetHookSpec, DropTargetMonitor } from "react-dnd";
 import { useMultiDrag, useMultiDrop } from "react-dnd-multi-backend";
 import { Piece, Position, Side } from "types";
 
@@ -65,21 +66,28 @@ export const Space = ({
   isCastle: boolean;
   row: number;
   col: number;
-  currentPlayer: Side;
+  currentPlayer: O.Option<Side>;
   onHover: () => void;
   onLeave: () => void;
-  onMove: (from: Position, to: Position) => void;
+  onMove: (from: Position, to: Position) => undefined;
 }) =>
   pipe(
-    useMultiDrop({
-      accept: currentPlayer === "attacker" ? "muscovite" : ["swede", "king"],
-      drop: (_, monitor) => {
-        onMove(monitor.getItem(), { row, col });
-      },
-      collect: (monitor) => ({
-        isOver: !!monitor.isOver(),
+    currentPlayer,
+    O.fold<Side, DropTargetHookSpec<unknown, DropTargetMonitor, unknown>>(
+      () => ({
+        accept: "",
+        drop: (_, __) => undefined,
+        collect: (_) => {},
       }),
-    }),
+      (cp) => ({
+        accept: cp === "attacker" ? "muscovite" : ["swede", "king"],
+        drop: (_, monitor) => onMove(monitor.getItem(), { row, col }),
+        collect: (monitor) => ({
+          isOver: !!monitor.isOver(),
+        }),
+      })
+    ),
+    useMultiDrop,
     ([[_, drop]]) => (
       <div
         className={

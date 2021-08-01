@@ -2,7 +2,9 @@ import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray";
 import * as O from "fp-ts/lib/Option";
 import * as Ord from "fp-ts/lib/Ord";
 
-export type Side = "defender" | "attacker";
+export const defender = "defender";
+export const attacker = "attacker";
+export type Side = typeof defender | typeof attacker;
 
 export type Position = {
   row: number;
